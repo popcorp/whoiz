@@ -17,10 +17,11 @@ class DiskFetcher
          return File.new(file_path).read if Time.now-File.mtime(file_path)<max_age
       end
       
+      @whois = Whois.lookup(domain).to_s.force_encoding('utf-8').encode
       File.open(file_path, "w") do |data|
-         data << Whois.lookup(domain).to_s.force_encoding('utf-8').encode
+         data << @whois
       end
-      data
+      @whois
    end
 end
 
