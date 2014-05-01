@@ -2,24 +2,19 @@ About WhoIz
 ===========
 
 WhoIz is a simple WHOIS lookup application. It's built on Sinatra and Heroku friendly.
-
+Fork by @PunKeel
 
 Use It
 ======
 
 JSON
 
-    curl http://whoiz.herokuapp.com/lookup.json?url=yahoo.com
-
-Browser 
-    
-    http://whoiz.herokuapp.com
-    http://whoiz.herokuapp.com/lookup?url=yahoo.com
+    curl http://whoiz.herokuapp.com/yahoo.com
 
 
 Clone It
 ========
-    git clone git://github.com/okor/whoiz.git
+    git clone git://github.com/popcorp/whoiz.git
 
 
 Restrict It
@@ -49,3 +44,7 @@ Deploy It
     heroku open
 
 
+Run it
+======
+    bundle
+    ruby main.rb

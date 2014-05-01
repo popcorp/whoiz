@@ -5,4 +5,4 @@ gem 'sinatra'
 gem 'whois'
 gem 'haml'
 gem 'json'
-
+gem 'digest'

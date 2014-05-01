@@ -3,48 +3,35 @@ require 'whois'
 require 'haml'
 require 'json'
 require 'ostruct'
+require 'digest'
+
+class DiskFetcher
+   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
+   def initialize(cache_dir='/tmp')
+      @cache_dir = cache_dir
+   end
+   def whois(domain, max_age=0)
+      file = Digest::MD5.digest(domain)
+      file_path = File.join("", @cache_dir, file)
+      if File.exists? file_path
+         return File.new(file_path).read if Time.now-File.mtime(file_path)<max_age
+      end
+      
+      File.open(file_path, "w") do |data|
+         data << Whois.lookup(domain).to_s.force_encoding('utf-8').encode
+      end
+      data
+   end
+end
 
 before do
 	response['Access-Control-Allow-Origin'] = '*'
 end
 
-helpers do
-
-  def cache_for_day
-    response['Cache-Control'] = 'public, max-age=86400'
-  end
-
-	def whois_lookup
-		lookup_info = Whois.query(params[:url])
-	end
-
-end
-
-
-get '/' do
-	# cache_for_day
-	haml :index
-end
-
-
-get '/lookup' do
+get '/:domain' do
 	begin
-		cache_for_day
-		@whois = whois_lookup
-		haml :lookup
+		@output = {:result => DiskFetcher.new.whois(params[:domain], 60)}.to_json
 	rescue Exception => e
-		@error = e
-		haml :error
-	end
-end
-
-
-get '/lookup.json' do
-	begin
-		cache_for_day
-		whois_lookup.to_s.force_encoding('utf-8').encode.to_json
-	rescue Exception => e
-		@error = e
-		{:Error => @error}.to_json
+		{:error => e}.to_json
 	end
 end
