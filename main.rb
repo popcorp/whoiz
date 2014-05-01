@@ -1,9 +1,12 @@
 require 'sinatra'
 require 'whois'
-require 'haml'
 require 'json'
 require 'ostruct'
 require 'digest'
+require 'yaml'
+
+CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
+set :port => CONFIG['port'], :bind => CONFIG['bind']
 
 class DiskFetcher
    # Taken from https://developer.yahoo.com/ruby/ruby-cache.html

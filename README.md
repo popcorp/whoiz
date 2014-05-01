@@ -2,6 +2,7 @@ About WhoIz
 ===========
 
 WhoIz is a simple WHOIS lookup application. It's built on Sinatra and Heroku friendly.
+
 Fork by @PunKeel
 
 Use It
