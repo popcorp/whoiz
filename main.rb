@@ -21,7 +21,7 @@ class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
   def initialize(cache_dir='/tmp/whois')
     @cache_dir = cache_dir
-    Dir.mkdir(cache_dir, 0700)
+    Dir.mkdir(cache_dir, 0700) unless File.directory?(cache_dir)
   end
   def fetch(domain, max_age=0, func)
     file = Digest::MD5.hexdigest(domain)
