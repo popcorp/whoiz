@@ -7,40 +7,80 @@ require 'yaml'
 require 'simpleidn'
 
 CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
-set :port => CONFIG['port'], :bind => CONFIG['bind']
-set :cache => CONFIG['cache']
+set :port => CONFIG['port'] || 4567
+set :bind => CONFIG['bind'] || "0.0.0.0"
+set :cache => CONFIG['cache'] || 600
+
+class Object
+  def hashify
+    self.instance_variables.each_with_object({}) { |var, hash| hash[var.to_s.delete("@")] = self.instance_variable_get(var) }
+  end
+end
 
 class DiskFetcher
-   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
-   def initialize(cache_dir='/tmp')
-      @cache_dir = cache_dir
-   end
-   def whois(domain, max_age=0)
-      file = Digest::MD5.hexdigest(domain)
-      file_path = File.join("", @cache_dir, file)
-      if File.exists? file_path
-         return File.new(file_path).read if Time.now-File.mtime(file_path)<max_age
+  # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
+  def initialize(cache_dir='/tmp/whois')
+    @cache_dir = cache_dir
+  end
+  def fetch(domain, max_age=0, func)
+    file = Digest::MD5.hexdigest(domain)
+    file_path = File.join("", @cache_dir, "whoiz_" + file)
+    if File.exists? file_path
+      if Time.now-File.mtime(file_path)<max_age
+        data = YAML::load_file(file_path)
+        return data
       end
-      
-      @whois = Whois.lookup(domain).to_s.force_encoding('utf-8').encode
-      File.open(file_path, "w") do |data|
-         data << @whois
-      end
-      @whois
-   end
+    end
+
+    result = func.call(domain)
+    File.open(file_path, "w") do |data|
+      data << result.to_yaml
+    end
+    result
+  end
+end
+$whois = Proc.new do |domain|
+  domain = SimpleIDN.to_ascii(domain)
+  Whois.lookup(domain)
+end
+
+def available?(domain)
+  whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+  !whois.registered?
 end
 
 before do
-	response['Access-Control-Allow-Origin'] = '*'
+  response['Access-Control-Allow-Origin'] = '*'
 end
 
-["/:domain", "/"].each do |path|
+["/raw/:domain", "/raw"].each do |path|
   get path do
-  	begin
-		domain = SimpleIDN.to_ascii(params[:domain])
-  		{:result => DiskFetcher.new.whois(domain, settings.cache)}.to_json
-  	rescue Exception => e
-		{:error => e}.to_json
-	end
+    begin
+      domain = params[:domain]
+      whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+      return whois.to_s.force_encoding('utf-8').encode
+    rescue Exception => e
+      e.to_s
+    end
+  end
+end
+
+["/available/:domain/?:extensions?", "/available"].each do |path|
+  get path do
+    begin
+      if params[:extensions].blank?
+        domain = params[:domain]
+        return {params[:domain] => available?(domain)}.to_json
+      end
+      result = {}
+      base_domain = params[:domain]
+      params[:extensions].split(",").each do |ext|
+        domain = base_domain + "." + ext
+        result[domain] = available?(domain)
+      end
+      result.to_json
+    rescue Exception => e
+      e
+    end
   end
 end

@@ -10,39 +10,19 @@ Use It
 
 JSON
 
-    curl http://whoiz.herokuapp.com/yahoo.com
+    curl http://whoiz.herokuapp.com/raw/yahoo.com
+    curl http://whoiz.herokuapp.com/raw/?domain=yahoo.com
+
+    curl http://whoiz.herokuapp.com/available/yahoo.com
+    curl http://whoiz.herokuapp.com/available/?domain=yahoo.com
+
+    curl http://whoiz.herokuapp.com/available/yahoo/com,eu,fr,nf,sh,ws
+    curl http://whoiz.herokuapp.com/available/?domain=yahoo.com&extensions=eu,com,fr,ws
 
 
 Clone It
 ========
     git clone git://github.com/popcorp/whoiz.git
-
-
-Restrict It
-===========
-
-Edit
-
-    main.rb
-
-Change this
-
-    before do
-      response['Access-Control-Allow-Origin'] = '*'
-    end
-
-To this
-
-    before do
-      response['Access-Control-Allow-Origin'] = 'http://yourwebsite.com'
-    end
-
-
-Deploy It
-=========
-    heroku create
-    git push heroku master
-    heroku open
 
 
 Run it
