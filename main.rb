@@ -8,6 +8,7 @@ require 'simpleidn'
 
 CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
 set :port => CONFIG['port'], :bind => CONFIG['bind']
+set :cache => CONFIG['cache']
 
 class DiskFetcher
    # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
@@ -31,14 +32,13 @@ end
 
 before do
 	response['Access-Control-Allow-Origin'] = '*'
-	@conf = {:cache => CONFIG['cache']}
 end
 
 ["/:domain", "/"].each do |path|
   get path do
   	begin
 		domain = SimpleIDN.to_ascii(params[:domain])
-  		{:result => DiskFetcher.new.whois(domain, @conf['cache'])}.to_json
+  		{:result => DiskFetcher.new.whois(domain, settings.cache)}.to_json
   	rescue Exception => e
 		{:error => e}.to_json
 	end
