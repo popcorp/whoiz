@@ -1,3 +1,9 @@
+# IP to bind
 bind: 0.0.0.0
+# Port to bind
 port: 12345
+# Cache whois informations, in seconds
 cache: 600
+# Comma-separated tld blacklist
+# .es and .sv disallow "public" requests, so disabled by default
+blacklist: sv,es

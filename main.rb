@@ -12,6 +12,8 @@ set :bind => CONFIG['bind'] || "0.0.0.0"
 set :cache => CONFIG['cache'] || 600
 set :show_exceptions => true
 
+set :blacklist => CONFIG['blacklist'].split(',') || []
+
 class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
   def initialize(cache_dir='/tmp/whois')
@@ -73,7 +75,15 @@ end
       base_domain = params[:domain]
       params[:extensions].split(",").each do |ext|
         domain = base_domain + "." + ext
-        result[domain] = is_available?(domain)
+        if !settings.blacklist.include?(ext)
+          begin
+            result[domain] = is_available?(domain)
+          rescue
+            result[domain] = "?"
+          end
+        else
+          result[domain] = "?"
+        end
       end
       result.to_json
     rescue Exception => e
