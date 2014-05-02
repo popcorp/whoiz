@@ -14,7 +14,7 @@ class DiskFetcher
       @cache_dir = cache_dir
    end
    def whois(domain, max_age=0)
-      file = Digest::MD5.digest(domain)
+      file = Digest::MD5.hexdigest(domain)
       file_path = File.join("", @cache_dir, file)
       if File.exists? file_path
          return File.new(file_path).read if Time.now-File.mtime(file_path)<max_age
@@ -32,10 +32,12 @@ before do
 	response['Access-Control-Allow-Origin'] = '*'
 end
 
-get '/:domain' do
-	begin
-		@output = {:result => DiskFetcher.new.whois(params[:domain], 60)}.to_json
-	rescue Exception => e
+["/:domain", "/"].each do |path|
+  get path do
+  	begin
+  		@output = {:result => DiskFetcher.new.whois(params[:domain], 60)}.to_json
+  	rescue Exception => e
 		{:error => e}.to_json
 	end
+  end
 end
