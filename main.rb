@@ -5,7 +5,7 @@ require 'ostruct'
 require 'digest'
 require 'yaml'
 require 'simpleidn'
-      
+
 CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
 set :port => CONFIG['port'] || 4567
 set :bind => CONFIG['bind'] || "0.0.0.0"
@@ -14,15 +14,15 @@ set :cache => CONFIG['cache'] || 600
 class Object
   def hashify
     self.instance_variables.each_with_object({}) { |var, hash| hash[var.to_s.delete("@")] = self.instance_variable_get(var) }
-  end 
-end 
-  
+  end
+end
+
 class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
   def initialize(cache_dir='/tmp/whois')
     @cache_dir = cache_dir
     Dir.mkdir(cache_dir, 0700)
-  end   
+  end
   def fetch(domain, max_age=0, func)
     file = Digest::MD5.hexdigest(domain)
     file_path = File.join("", @cache_dir, file)
@@ -38,7 +38,7 @@ class DiskFetcher
       data << result.to_yaml
     end
     result
-  end                                                              
+  end
 end
 $whois = Proc.new do |domain|
   domain = SimpleIDN.to_ascii(domain)
@@ -62,7 +62,7 @@ end
       return whois.to_s.force_encoding('utf-8').encode
     rescue Exception => e
       e.to_s
-    end 
+    end
   end
 end
 
@@ -78,8 +78,8 @@ end
       params[:extensions].split(",").each do |ext|
         domain = base_domain + "." + ext
         result[domain] = available?(domain)
-     end
-     result.to_json
+      end
+      result.to_json
     rescue Exception => e
       e
     end
