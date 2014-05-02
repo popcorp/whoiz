@@ -104,3 +104,9 @@ end
     end
   end
 end
+
+not_found do
+  redirect "https://github.com/popcorp/whoiz"
+end   
+     
+       
