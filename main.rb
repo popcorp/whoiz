@@ -84,3 +84,47 @@ end
     end
   end
 end
+ch do |path|
+  get path do
+    begin
+      domain = params[:domain]
+      whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+      return whois.to_s.force_encoding('utf-8').encode
+    rescue Exception => e
+      e.to_s
+    end
+  end
+end
+
+["/available/:domain/?:extensions?", "/available"].each do |path|
+  get path do
+    begin
+      if params[:extensions].blank?
+        domain = params[:domain]
+        return {params[:domain] => available?(domain)}.to_json
+      end
+      result = {}
+      base_domain = params[:domain]
+      params[:extensions].split(",").each do |ext|
+        domain = base_domain + "." + ext
+        result[domain] = available?(domain)
+      end
+      result.to_json
+    rescue Exception => e
+      e
+    end
+=======
+        response['Access-Control-Allow-Origin'] = '*'
+end
+                                                                   
+["/:domain", "/"].each do |path|
+  get path do
+        begin
+                domain = SimpleIDN.to_ascii(params[:domain])
+                {:result => DiskFetcher.new.fetch(domain, settings.cache, $whois)}.to_json
+        rescue Exception => e
+                {:error => e}.to_json
+        end
+>>>>>>> 8645bbfe0ff592b452b9ba66da4510eafcfc7544
+  end
+end
