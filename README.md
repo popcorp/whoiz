@@ -13,6 +13,10 @@ JSON
     curl http://whoiz.herokuapp.com/raw/yahoo.com
     curl http://whoiz.herokuapp.com/raw/?domain=yahoo.com
 
+
+    curl http://whoiz.herokuapp.com/infos/yahoo.com
+    curl http://whoiz.herokuapp.com/infos/?domain=yahoo.com
+
     curl http://whoiz.herokuapp.com/available/yahoo.com
     curl http://whoiz.herokuapp.com/available/?domain=yahoo.com
 

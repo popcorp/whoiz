@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'whois'
-require 'json'
+require 'active_support/json'
 require 'ostruct'
 require 'digest'
 require 'yaml'
@@ -10,12 +10,7 @@ CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
 set :port => CONFIG['port'] || 4567
 set :bind => CONFIG['bind'] || "0.0.0.0"
 set :cache => CONFIG['cache'] || 600
-
-class Object
-  def hashify
-    self.instance_variables.each_with_object({}) { |var, hash| hash[var.to_s.delete("@")] = self.instance_variable_get(var) }
-  end
-end
+set :show_exceptions => true
 
 class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
@@ -40,12 +35,13 @@ class DiskFetcher
     result
   end
 end
+
 $whois = Proc.new do |domain|
   domain = SimpleIDN.to_ascii(domain)
   Whois.lookup(domain)
 end
 
-def available?(domain)
+def is_available?(domain)
   whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
   !whois.registered?
 end
@@ -71,17 +67,30 @@ end
     begin
       if params[:extensions].blank?
         domain = params[:domain]
-        return {params[:domain] => available?(domain)}.to_json
+        return {params[:domain] => is_available?(domain)}.to_json
       end
       result = {}
       base_domain = params[:domain]
       params[:extensions].split(",").each do |ext|
         domain = base_domain + "." + ext
-        result[domain] = available?(domain)
+        result[domain] = is_available?(domain)
       end
       result.to_json
     rescue Exception => e
-      e
+      e.to_json
+    end
+  end
+end
+
+
+["/infos/:domain", "/infos"].each do |path|
+  get path do
+    begin
+      domain = params[:domain]
+      whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+      whois.properties.to_json
+    rescue Exception => e
+      e.to_json
     end
   end
 end
