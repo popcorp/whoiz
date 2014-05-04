@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
-ruby >= '1.8'
+ruby '>=1.9'
 gem 'sinatra'
 gem 'whois'
 gem 'activesupport'
