@@ -2,7 +2,7 @@ require 'sinatra'
 require 'whois'
 require 'active_support/json'
 require 'ostruct'
-require 'digest'
+require 'digest/md5'
 require 'yaml'
 require 'simpleidn'
 
