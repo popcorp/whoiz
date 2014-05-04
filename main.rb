@@ -7,8 +7,8 @@ require 'yaml'
 require 'simpleidn'
 
 CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
-set :port => CONFIG['port'] || 4567
-set :bind => CONFIG['bind'] || "0.0.0.0"
+set :port => ENV['PORT'] || CONFIG['port'] || 4567
+set :bind =>  CONFIG['bind'] || "0.0.0.0"
 set :cache => CONFIG['cache'] || 600
 set :show_exceptions => true
 
