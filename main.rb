@@ -55,6 +55,7 @@ end
 ["/raw/:domain", "/raw"].each do |path|
   get path do
     begin
+      content_type "text/plain"
       domain = params[:domain]
       whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
       return whois.to_s.force_encoding('utf-8').encode
@@ -67,6 +68,7 @@ end
 ["/available/:domain/?:extensions?", "/available"].each do |path|
   get path do
     begin
+      content_type "text/plain"
       if params[:extensions].blank?
         domain = params[:domain]
         return {params[:domain] => is_available?(domain)}.to_json
@@ -96,6 +98,7 @@ end
 ["/infos/:domain", "/infos"].each do |path|
   get path do
     begin
+      content_type "application/json"
       domain = params[:domain]
       whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
       whois.properties.to_json
