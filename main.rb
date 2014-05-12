@@ -19,6 +19,7 @@ set :cache => CONFIG['cache'] || 600
 set :show_exceptions => true
 
 set :blacklist => CONFIG['blacklist'].split(',') || []
+set :fallback_server => CONFIG['fallback_server'] || ""
 
 class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
@@ -32,7 +33,9 @@ class DiskFetcher
     if File.exists? file_path
       if Time.now-File.mtime(file_path)<max_age
         data = YAML::load_file(file_path)
-        return data
+        unless data == ""
+          return data
+        end
       end
     end
 
@@ -45,8 +48,15 @@ class DiskFetcher
 end
 
 $whois = Proc.new do |domain|
-  domain = SimpleIDN.to_ascii(domain)
-  Whois.lookup(domain)
+  begin
+    domain = SimpleIDN.to_ascii(domain)
+    return Whois.lookup(domain)
+  rescue Whois::error => e
+    unless settings.fallback_server.empty?
+      return Whois::Client.new(:host => settings.fallback_server)
+    end
+    e
+  end
 end
 
 def is_available?(domain)
@@ -119,3 +129,4 @@ not_found do
 end   
      
        
+

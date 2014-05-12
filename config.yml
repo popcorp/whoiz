@@ -7,3 +7,6 @@ cache: 600
 # Comma-separated tld blacklist
 # .es and .sv disallow "public" requests, so disabled by default
 blacklist: sv,es
+# A fallback server if an error occurs
+# empty string ("") to disable
+fallback_server: ""
