@@ -54,7 +54,7 @@ $whois = Proc.new do |domain|
     break
   rescue Whois::Error => e
     unless settings.fallback_server.empty?
-      next Whois::Client.new(:host => settings.fallback_server)
+      next Whois::Client.new(:host => settings.fallback_server).lookup(domain)
       break
     end
     e
