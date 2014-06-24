@@ -6,7 +6,7 @@ require 'digest/md5'
 require 'yaml'
 require 'simpleidn'
 
-CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
+CONFIG = YAML.load_file('config.yml') unless defined? CONFIG
 
 set :port => ENV['port'].to_i || CONFIG['port'] || 4567
 
@@ -48,13 +48,11 @@ $whois = Proc.new do |domain|
   begin
     domain = SimpleIDN.to_ascii(domain)
     next Whois.lookup(domain)
-    break
   rescue Whois::Error => e
     unless settings.fallback_server.empty?
       puts settings.fallback_server
       client = Whois::Client.new(:host => settings.fallback_server)
       next client.lookup(domain)
-      break
     end
     e
   end
