@@ -8,18 +8,14 @@ require 'simpleidn'
 
 CONFIG = YAML.load_file("config.yml") unless defined? CONFIG
 
-if !ENV['PORT'].to_s.empty?
-  set :port => ENV['port'].to_i
-else
-  set :port => CONFIG['port'] || 4567
-end
+set :port => ENV['port'].to_i || CONFIG['port'] || 4567
 
-set :bind => CONFIG['bind'] || "0.0.0.0"
+set :bind => CONFIG['bind'] || '0.0.0.0'
 set :cache => CONFIG['cache'] || 600
 set :show_exceptions => true
 
 set :blacklist => CONFIG['blacklist'].split(',') || []
-set :fallback_server => CONFIG['fallback_server'] || ""
+set :fallback_server => CONFIG['fallback_server'] || ''
 
 class DiskFetcher
   # Taken from https://developer.yahoo.com/ruby/ruby-cache.html
@@ -27,20 +23,21 @@ class DiskFetcher
     @cache_dir = cache_dir
     Dir.mkdir(cache_dir, 0700) unless File.directory?(cache_dir)
   end
+
   def fetch(domain, max_age=0, func)
     file = Digest::MD5.hexdigest(domain)
-    file_path = File.join("", @cache_dir, file)
+    file_path = File.join('', @cache_dir, file)
     if File.exists? file_path
       if Time.now-File.mtime(file_path)<max_age
         data = YAML::load_file(file_path)
-        unless data == ""
+        unless data == ''
           return data
         end
       end
     end
 
     result = func.call(domain)
-    File.open(file_path, "w") do |data|
+    File.open(file_path, 'w') do |data|
       data << result.to_yaml
     end
     result
@@ -60,7 +57,7 @@ $whois = Proc.new do |domain|
 end
 
 def is_available?(domain)
-  whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+  whois = DiskFetcher.new.fetch(domain, settings.cache, $whois)
   !whois.registered?
 end
 
@@ -68,12 +65,12 @@ before do
   response['Access-Control-Allow-Origin'] = '*'
 end
 
-["/raw/:domain", "/raw"].each do |path|
+%w(/raw/:domain /raw).each do |path|
   get path do
     begin
-      content_type "text/plain"
+      content_type 'text/plain'
       domain = params[:domain]
-      whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+      whois = DiskFetcher.new.fetch(domain, settings.cache, $whois)
       return whois.to_s.force_encoding('utf-8').encode
     rescue Exception => e
       e.to_s
@@ -81,26 +78,26 @@ end
   end
 end
 
-["/available/:domain/?:extensions?", "/available"].each do |path|
+%w(/available/:domain/?:extensions? /available).each do |path|
   get path do
     begin
-      content_type "text/plain"
+      content_type 'text/plain'
       if params[:extensions].blank?
         domain = params[:domain]
         return {params[:domain] => is_available?(domain)}.to_json
       end
       result = {}
       base_domain = params[:domain]
-      params[:extensions].split(",").each do |ext|
-        domain = base_domain + "." + ext
-        if !settings.blacklist.include?(ext)
+      params[:extensions].split(',').each do |ext|
+        domain = base_domain + '.' + ext
+        if settings.blacklist.include? ext
+          result[domain] = '?'
+        else
           begin
             result[domain] = is_available?(domain)
           rescue
-            result[domain] = "?"
+            result[domain] = '?'
           end
-        else
-          result[domain] = "?"
         end
       end
       result.to_json
@@ -111,12 +108,12 @@ end
 end
 
 
-["/infos/:domain", "/infos"].each do |path|
+%w(/infos/:domain /infos).each do |path|
   get path do
     begin
-      content_type "application/json"
+      content_type 'application/json'
       domain = params[:domain]
-      whois =  DiskFetcher.new.fetch(domain, settings.cache, $whois)
+      whois = DiskFetcher.new.fetch(domain, settings.cache, $whois)
       whois.properties.to_json
     rescue Exception => e
       e.to_json
@@ -125,7 +122,7 @@ end
 end
 
 not_found do
-  redirect "https://github.com/popcorp/whoiz"
+  redirect 'https://github.com/popcorp/whoiz'
 end   
      
        
