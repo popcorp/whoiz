@@ -47,10 +47,14 @@ end
 $whois = Proc.new do |domain|
   begin
     domain = SimpleIDN.to_ascii(domain)
-    return Whois.lookup(domain)
-  rescue Whois::error => e
+    next Whois.lookup(domain)
+    break
+  rescue Whois::Error => e
     unless settings.fallback_server.empty?
-      return Whois::Client.new(:host => settings.fallback_server)
+      puts settings.fallback_server
+      client = Whois::Client.new(:host => settings.fallback_server)
+      next client.lookup(domain)
+      break
     end
     e
   end
