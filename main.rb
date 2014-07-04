@@ -8,7 +8,7 @@ require 'simpleidn'
 
 CONFIG = YAML.load_file('config.yml') unless defined? CONFIG
 
-set :port => ENV['port'].to_i || CONFIG['port'] || 4567
+set :port => ENV['port'] || CONFIG['port'] || 4567
 
 set :bind => CONFIG['bind'] || '0.0.0.0'
 set :cache => CONFIG['cache'] || 600
@@ -125,7 +125,4 @@ end
 
 not_found do
   redirect 'https://github.com/popcorp/whoiz'
-end   
-     
-       
-
+end
