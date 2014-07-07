@@ -45,16 +45,18 @@ class DiskFetcher
 end
 
 $whois = Proc.new do |domain|
+  result = ""
   begin
     domain = SimpleIDN.to_ascii(domain)
-    next Whois.lookup(domain)
-  rescue Whois::Error => e
+    Whois.lookup(domain)
+  rescue Errno::EHOSTUNREACH, Whois::Error => e
     unless settings.fallback_server.empty?
       puts settings.fallback_server
       client = Whois::Client.new(:host => settings.fallback_server)
-      next client.lookup(domain)
+      client.lookup(domain)
+    else
+      e
     end
-    e
   end
 end
 
